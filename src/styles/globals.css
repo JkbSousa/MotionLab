@@ -1,0 +1,35 @@
+@import './theme.css';
+
+/* Estilos customizados para sliders */
+input[type='range'].slider-thumb::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+  transition: all 0.2s;
+}
+
+input[type='range'].slider-thumb::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.9);
+  transform: scale(1.1);
+}
+
+input[type='range'].slider-thumb::-moz-range-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+  transition: all 0.2s;
+  border: none;
+}
+
+input[type='range'].slider-thumb::-moz-range-thumb:hover {
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.9);
+  transform: scale(1.1);
+}
