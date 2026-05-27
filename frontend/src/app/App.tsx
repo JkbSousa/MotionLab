@@ -36,7 +36,7 @@ export default function App() {
 
   const calculateMetrics = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/simulate', {
+      const response = await fetch('https://giving-creation-production-f07c.up.railway.app/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ velocity, angle, gravity }),
