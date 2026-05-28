@@ -13,7 +13,7 @@ public class SimulationController {
         double vx = req.velocity() * Math.cos(angleRad);
         double vy = req.velocity() * Math.sin(angleRad);
 
-        double k = 0.01;
+        double k = req.dragCoefficient();
         double dt = 0.016;
         double x = 0, y = 0;
         double maxHeight = 0;

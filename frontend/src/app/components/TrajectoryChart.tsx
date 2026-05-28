@@ -5,11 +5,10 @@ interface TrajectoryChartProps {
   velocity: number;
   angle: number;
   gravity: number;
+  dragCoefficient: number;
 }
 
-const K = 0.01; // mesmo coeficiente de arrasto da API Java
-
-function simulateTrajectory(velocity: number, angle: number, gravity: number) {
+function simulateTrajectory(velocity: number, angle: number, gravity: number, dragCoefficient: number) {
   const angleRad = (angle * Math.PI) / 180;
   let vx = velocity * Math.cos(angleRad);
   let vy = velocity * Math.sin(angleRad);
@@ -22,8 +21,8 @@ function simulateTrajectory(velocity: number, angle: number, gravity: number) {
     points.push({ x: Number(x.toFixed(2)), y: Number(y.toFixed(2)) });
 
     const speed = Math.sqrt(vx * vx + vy * vy);
-    const ax = -K * speed * vx;
-    const ay = -gravity - K * speed * vy;
+    const ax = -dragCoefficient * speed * vx;
+    const ay = -gravity - dragCoefficient * speed * vy;
 
     vx += ax * dt;
     vy += ay * dt;
@@ -36,8 +35,8 @@ function simulateTrajectory(velocity: number, angle: number, gravity: number) {
   return points;
 }
 
-export function TrajectoryChart({ velocity, angle, gravity }: TrajectoryChartProps) {
-  const points = simulateTrajectory(velocity, angle, gravity);
+export function TrajectoryChart({ velocity, angle, gravity, dragCoefficient }: TrajectoryChartProps) {
+  const points = simulateTrajectory(velocity, angle, gravity, dragCoefficient);
 
   return (
     <motion.div

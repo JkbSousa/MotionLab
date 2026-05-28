@@ -7,11 +7,10 @@ interface SimulationCanvasProps {
   gravity: number;
   isSimulating: boolean;
   onComplete: () => void;
+  dragCoefficient: number;
 }
 
-const K = 0.01; // mesmo coeficiente de arrasto da API Java
-
-export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onComplete }: SimulationCanvasProps) {
+export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onComplete, dragCoefficient }: SimulationCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
 
@@ -39,7 +38,6 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
       ctx.fillStyle = '#0f172a';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Grid
       ctx.strokeStyle = '#1e293b';
       ctx.lineWidth = 1;
       for (let i = 0; i < canvas.width; i += 40) {
@@ -49,7 +47,6 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
         ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
       }
 
-      // Eixos
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(canvas.width, startY); ctx.stroke();
@@ -61,7 +58,6 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
       if (y >= 0 && canvasX < canvas.width) {
         trajectory.push({ x: canvasX, y: canvasY });
 
-        // Trajetória
         if (trajectory.length > 1) {
           ctx.strokeStyle = '#3b82f6';
           ctx.lineWidth = 2;
@@ -76,7 +72,6 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
           ctx.shadowBlur = 0;
         }
 
-        // Projétil
         ctx.fillStyle = '#60a5fa';
         ctx.shadowBlur = 20;
         ctx.shadowColor = '#60a5fa';
@@ -85,11 +80,10 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Atualiza posição com resistência do ar
         const dt = 0.016;
         const speed = Math.sqrt(vx * vx + vy * vy);
-        const ax = -K * speed * vx;
-        const ay = -gravity - K * speed * vy;
+        const ax = -dragCoefficient * speed * vx;
+        const ay = -gravity - dragCoefficient * speed * vy;
         vx += ax * dt;
         vy += ay * dt;
         x += vx * dt;
@@ -106,7 +100,7 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [velocity, angle, gravity, isSimulating, onComplete]);
+  }, [velocity, angle, gravity, isSimulating, onComplete, dragCoefficient]);
 
   return (
     <motion.div

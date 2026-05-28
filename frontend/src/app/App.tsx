@@ -11,10 +11,11 @@ const GRAVITY_OPTIONS = [
   { name: 'Lua', value: 1.62, icon: '🌙' },
   { name: 'Marte', value: 3.71, icon: '🔴' },
   { name: 'Vênus', value: 8.87, icon: '🟠' },
-  { name: 'Sol', value: 274, icon: '☀️'},
+  { name: 'Sol', value: 274, icon: '☀️' },
 ];
 
 export default function App() {
+  const [dragCoefficient, setDragCoefficient] = useState(0.01);
   const [velocity, setVelocity] = useState(50);
   const [angle, setAngle] = useState(45);
   const [gravity, setGravity] = useState(9.81);
@@ -39,7 +40,7 @@ export default function App() {
       const response = await fetch('https://giving-creation-production-f07c.up.railway.app/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ velocity, angle, gravity }),
+        body: JSON.stringify({ velocity, angle, gravity, dragCoefficient }),
       });
 
       if (!response.ok) throw new Error('erro na API');
@@ -97,12 +98,15 @@ export default function App() {
         <div className="grid grid-cols-1 gap-2">
           {GRAVITY_OPTIONS.map((option) => (
             <button key={option.name}
-              onClick={() => { setGravity(option.value); setSelectedPlanet(option.name); }}
-              className={`p-3 rounded-lg border transition-all duration-200 flex items-center gap-3 ${
-                selectedPlanet === option.name
-                  ? 'bg-[#3b82f6]/20 border-[#3b82f6] shadow-[0_0_20px_rgba(59,130,246,0.3)]'
-                  : 'bg-[#0f172a] border-[#334155] hover:border-[#3b82f6]/50'
-              }`}>
+              onClick={() => {
+                setGravity(option.value);
+                setSelectedPlanet(option.name);
+                setDragCoefficient(option.name === 'Sol' ? 0 : 0.01);
+              }}
+              className={`p-3 rounded-lg border transition-all duration-200 flex items-center gap-3 ${selectedPlanet === option.name
+                ? 'bg-[#3b82f6]/20 border-[#3b82f6] shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                : 'bg-[#0f172a] border-[#334155] hover:border-[#3b82f6]/50'
+                }`}>
               <span className="text-2xl">{option.icon}</span>
               <div className="flex-1 text-left">
                 <div className="font-medium">{option.name}</div>
@@ -146,10 +150,24 @@ export default function App() {
             Visualização da Trajetória
           </h2>
           <div className="h-[260px]">
-            <SimulationCanvas velocity={velocity} angle={angle} gravity={gravity} isSimulating={isSimulating} onComplete={handleSimulationComplete} />
+            <SimulationCanvas 
+            velocity={velocity} 
+            angle={angle} 
+            gravity={gravity} 
+            isSimulating={isSimulating} 
+            onComplete={handleSimulationComplete} 
+            dragCoefficient={dragCoefficient}
+            />
           </div>
         </div>
-        <TrajectoryChart velocity={velocity} angle={angle} gravity={gravity} />
+        <div className="h-[320px]">
+          <TrajectoryChart 
+          velocity={velocity} 
+          angle={angle} 
+          gravity={gravity} 
+          dragCoefficient={dragCoefficient}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <MetricCard icon={ArrowUpCircle} label="Altura Máxima" value={metrics.maxHeight.toString()} unit="m" delay={0} />
           <MetricCard icon={Clock} label="Tempo de Voo" value={metrics.flightTime.toString()} unit="s" delay={0.1} />
@@ -178,7 +196,14 @@ export default function App() {
                   Visualização da Trajetória
                 </h2>
                 <div className="h-[calc(100%-3rem)]">
-                  <SimulationCanvas velocity={velocity} angle={angle} gravity={gravity} isSimulating={isSimulating} onComplete={handleSimulationComplete} />
+                  <SimulationCanvas 
+                  velocity={velocity} 
+                  angle={angle} 
+                  gravity={gravity} 
+                  isSimulating={isSimulating} 
+                  onComplete={handleSimulationComplete}
+                  dragCoefficient={dragCoefficient} 
+                  />
                 </div>
               </div>
             </Panel>
@@ -187,7 +212,12 @@ export default function App() {
 
             <Panel defaultSize={30} minSize={15}>
               <div className="h-full">
-                <TrajectoryChart velocity={velocity} angle={angle} gravity={gravity} />
+                <TrajectoryChart 
+                velocity={velocity} 
+                angle={angle} 
+                gravity={gravity} 
+                dragCoefficient={dragCoefficient}
+                />
               </div>
             </Panel>
 
