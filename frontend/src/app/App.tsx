@@ -7,11 +7,11 @@ import { MetricCard } from './components/MetricCard';
 import { TrajectoryChart } from './components/TrajectoryChart';
 
 const GRAVITY_OPTIONS = [
-  { name: 'Terra', value: 9.81, icon: '🌍' },
-  { name: 'Lua', value: 1.62, icon: '🌙' },
-  { name: 'Marte', value: 3.71, icon: '🔴' },
-  { name: 'Vênus', value: 8.87, icon: '🟠' },
-  { name: 'Sol', value: 274, icon: '☀️' },
+  { name: 'Terra', value: 9.81, icon: '🌍', drag: 0.01 },
+  { name: 'Lua', value: 1.62, icon: '🌙', drag: 0.0001 },
+  { name: 'Marte', value: 3.71, icon: '🔴', drag: 0.005 },
+  { name: 'Vênus', value: 8.87, icon: '🟠', drag: 0.02 },
+  { name: 'Sol', value: 274, icon: '☀️', drag: 0 },
 ];
 
 export default function App() {
@@ -101,7 +101,7 @@ export default function App() {
               onClick={() => {
                 setGravity(option.value);
                 setSelectedPlanet(option.name);
-                setDragCoefficient(option.name === 'Sol' ? 0 : 0.01);
+                setDragCoefficient(option.drag);
               }}
               className={`p-3 rounded-lg border transition-all duration-200 flex items-center gap-3 ${selectedPlanet === option.name
                 ? 'bg-[#3b82f6]/20 border-[#3b82f6] shadow-[0_0_20px_rgba(59,130,246,0.3)]'
