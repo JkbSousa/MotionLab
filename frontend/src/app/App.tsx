@@ -18,7 +18,7 @@ type LayoutMode = 'mobile' | 'compact' | 'desktop';
 
 function getLayout(width: number): LayoutMode {
   if (width < 768) return 'mobile';
-  if (width < 1100) return 'compact';
+  if (width < 1920) return 'compact';
   return 'desktop';
 }
 
