@@ -338,45 +338,49 @@ export default function App() {
     <div className="h-screen overflow-hidden bg-[#0f172a] text-white p-6 flex flex-col">
       {header}
       <div className="flex-1 min-h-0 flex gap-6">
-        <motion.aside initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="w-80 shrink-0">
+        <motion.aside initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="w-80 shrink-0 overflow-hidden">
           {controls(false)}
         </motion.aside>
 
-        <div className="flex-1 min-w-0 h-full">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
           <PanelGroup direction="vertical" className="h-full">
 
-            <Panel defaultSize={45} minSize={20}>
-              <div className="bg-[#1e293b] rounded-xl p-6 border border-[#334155] h-full" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }}>
-                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <div className="w-1 h-6 bg-[#3b82f6] rounded-full" />
-                  Visualização da Trajetória
-                </h2>
-                <div className="h-[calc(100%-3rem)]">
-                  <SimulationCanvas
-                    velocity={velocity} angle={angle} gravity={gravity}
-                    isSimulating={isSimulating} onComplete={handleSimulationComplete}
-                    dragCoefficient={dragCoefficient}
-                  />
+            <Panel defaultSize={55} minSize={20}>
+              <div className="h-full overflow-hidden">
+                <div className="bg-[#1e293b] rounded-xl p-6 border border-[#334155] h-full" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }}>
+                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <div className="w-1 h-6 bg-[#3b82f6] rounded-full" />
+                    Visualização da Trajetória
+                  </h2>
+                  <div className="h-[calc(100%-3rem)]">
+                    <SimulationCanvas
+                      velocity={velocity} angle={angle} gravity={gravity}
+                      isSimulating={isSimulating} onComplete={handleSimulationComplete}
+                      dragCoefficient={dragCoefficient}
+                    />
+                  </div>
                 </div>
               </div>
             </Panel>
 
             <PanelResizeHandle hitAreaMargins={{ coarse: 4, fine: 4 }} className="h-1.5 rounded-full bg-[#334155] hover:bg-[#3b82f6] transition-colors cursor-row-resize my-1" />
 
-            <Panel defaultSize={30} minSize={15}>
-              <div className="h-full">
+            <Panel defaultSize={28} minSize={15}>
+              <div className="h-full overflow-hidden">
                 <TrajectoryChart velocity={velocity} angle={angle} gravity={gravity} dragCoefficient={dragCoefficient} />
               </div>
             </Panel>
 
             <PanelResizeHandle hitAreaMargins={{ coarse: 4, fine: 4 }} className="h-1.5 rounded-full bg-[#334155] hover:bg-[#3b82f6] transition-colors cursor-row-resize my-1" />
 
-            <Panel defaultSize={25} minSize={15}>
-              <div className="grid grid-cols-4 gap-4 h-full">
-                <MetricCard icon={ArrowUpCircle} label="Altura Máxima" value={metrics.maxHeight.toString()} unit="m" delay={0} />
-                <MetricCard icon={Clock} label="Tempo de Voo" value={metrics.flightTime.toString()} unit="s" delay={0.1} />
-                <MetricCard icon={Target} label="Alcance" value={metrics.range.toString()} unit="m" delay={0.2} />
-                <MetricCard icon={Gauge} label="Velocidade Final" value={metrics.finalVelocity.toString()} unit="m/s" delay={0.3} />
+            <Panel defaultSize={17} minSize={12}>
+              <div className="h-full overflow-hidden">
+                <div className="grid grid-cols-4 gap-4 h-full">
+                  <MetricCard icon={ArrowUpCircle} label="Altura Máxima" value={metrics.maxHeight.toString()} unit="m" delay={0} />
+                  <MetricCard icon={Clock} label="Tempo de Voo" value={metrics.flightTime.toString()} unit="s" delay={0.1} />
+                  <MetricCard icon={Target} label="Alcance" value={metrics.range.toString()} unit="m" delay={0.2} />
+                  <MetricCard icon={Gauge} label="Velocidade Final" value={metrics.finalVelocity.toString()} unit="m/s" delay={0.3} />
+                </div>
               </div>
             </Panel>
 
