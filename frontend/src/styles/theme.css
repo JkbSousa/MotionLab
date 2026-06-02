@@ -178,4 +178,16 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+
+/* Esconder scrollbar em todos os elementos sem bloquear scroll */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Esconder scrollbar dos painéis do react-resizable-panels */
+[data-panel] {
+  overflow: hidden !important;
+}
+
 }

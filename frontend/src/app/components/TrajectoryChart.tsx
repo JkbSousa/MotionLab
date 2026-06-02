@@ -7,7 +7,8 @@ interface TrajectoryChartProps {
   gravity: number;
   dragCoefficient: number;
 }
-
+//lembra de alterar isso aqui pra receber os dados da api antes de calcular
+//calculo em tempo real é importante, mas tem que prestar atencao nisso.
 function simulateTrajectory(velocity: number, angle: number, gravity: number, dragCoefficient: number) {
   const angleRad = (angle * Math.PI) / 180;
   let vx = velocity * Math.cos(angleRad);
@@ -34,7 +35,7 @@ function simulateTrajectory(velocity: number, angle: number, gravity: number, dr
 
   return points;
 }
-
+// a funcao toda
 export function TrajectoryChart({ velocity, angle, gravity, dragCoefficient }: TrajectoryChartProps) {
   const points = simulateTrajectory(velocity, angle, gravity, dragCoefficient);
 

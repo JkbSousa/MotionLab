@@ -34,17 +34,3 @@ input[type='range'].slider-thumb::-moz-range-thumb:hover {
   transform: scale(1.1);
 }
 
-/* Esconder scrollbar em todos os elementos sem bloquear scroll */
-* {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-*::-webkit-scrollbar {
-  display: none;
-}
-
-/* Esconder scrollbar dos painéis do react-resizable-panels */
-[data-panel] {
-  overflow: hidden !important;
-}

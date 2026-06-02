@@ -79,7 +79,7 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
         ctx.arc(canvasX, canvasY, 8, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
-
+//aqui tb. Lembra de revisar dps
         const dt = 0.016;
         const speed = Math.sqrt(vx * vx + vy * vy);
         const ax = -dragCoefficient * speed * vx;
@@ -88,7 +88,7 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
         vy += ay * dt;
         x += vx * dt;
         y += vy * dt;
-
+//revisao
         animationRef.current = requestAnimationFrame(animate);
       } else {
         onComplete();
