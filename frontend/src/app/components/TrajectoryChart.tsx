@@ -7,19 +7,24 @@ interface TrajectoryChartProps {
   gravity: number;
   dragCoefficient: number;
 }
-//lembra de alterar isso aqui pra receber os dados da api antes de calcular
-//calculo em tempo real é importante, mas tem que prestar atencao nisso.
+
+const MAX_POINTS = 500;
+const MAX_ITERATIONS = 500_000;
+
 function simulateTrajectory(velocity: number, angle: number, gravity: number, dragCoefficient: number) {
   const angleRad = (angle * Math.PI) / 180;
   let vx = velocity * Math.cos(angleRad);
   let vy = velocity * Math.sin(angleRad);
 
-  const dt = 0.016;
-  let x = 0, y = 0;
-  const points = [];
+  // dt dinâmico: velocidades altas usam passos maiores
+  const dt = Math.max(0.016, velocity / 1000);
 
-  while (y >= 0 || points.length === 0) {
-    points.push({ x: Number(x.toFixed(2)), y: Number(y.toFixed(2)) });
+  let x = 0, y = 0;
+  const allPoints: { x: number; y: number }[] = [];
+  let iterations = 0;
+
+  while (iterations < MAX_ITERATIONS) {
+    allPoints.push({ x, y });
 
     const speed = Math.sqrt(vx * vx + vy * vy);
     const ax = -dragCoefficient * speed * vx;
@@ -30,12 +35,22 @@ function simulateTrajectory(velocity: number, angle: number, gravity: number, dr
     x += vx * dt;
     y += vy * dt;
 
+    iterations++;
     if (y < 0) break;
   }
 
-  return points;
+  // Subsamplear para no máximo MAX_POINTS
+  if (allPoints.length <= MAX_POINTS) return allPoints.map(p => ({
+    x: Number(p.x.toFixed(1)),
+    y: Number(p.y.toFixed(1)),
+  }));
+
+  const step = Math.ceil(allPoints.length / MAX_POINTS);
+  return allPoints
+    .filter((_, i) => i % step === 0 || i === allPoints.length - 1)
+    .map(p => ({ x: Number(p.x.toFixed(1)), y: Number(p.y.toFixed(1)) }));
 }
-// a funcao toda
+
 export function TrajectoryChart({ velocity, angle, gravity, dragCoefficient }: TrajectoryChartProps) {
   const points = simulateTrajectory(velocity, angle, gravity, dragCoefficient);
 

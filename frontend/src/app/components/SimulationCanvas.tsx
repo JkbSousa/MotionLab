@@ -10,6 +10,9 @@ interface SimulationCanvasProps {
   dragCoefficient: number;
 }
 
+const MAX_ITERATIONS = 500_000;
+const CANVAS_POINTS = 800; // pontos máximos na animação
+
 export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onComplete, dragCoefficient }: SimulationCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
@@ -19,76 +22,104 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const angleRad = (angle * Math.PI) / 180;
-    let vx = velocity * Math.cos(angleRad);
-    let vy = velocity * Math.sin(angleRad);
 
-    const startX = 50;
-    const startY = canvas.height - 50;
-    const scale = 2;
+    // 1. Pré-calcular trajetória completa com dt dinâmico
+    const dt = Math.max(0.016, velocity / 1000);
+    let vx0 = velocity * Math.cos(angleRad);
+    let vy0 = velocity * Math.sin(angleRad);
+    let px = 0, py = 0;
+    const fullPath: { x: number; y: number }[] = [];
+    let iter = 0;
 
-    const trajectory: { x: number; y: number }[] = [];
-    let x = 0, y = 0;
+    while (iter < MAX_ITERATIONS) {
+      fullPath.push({ x: px, y: py });
+      const speed = Math.sqrt(vx0 * vx0 + vy0 * vy0);
+      vx0 += (-dragCoefficient * speed * vx0) * dt;
+      vy0 += (-gravity - dragCoefficient * speed * vy0) * dt;
+      px += vx0 * dt;
+      py += vy0 * dt;
+      iter++;
+      if (py < 0) break;
+    }
+
+    if (fullPath.length === 0) { onComplete(); return; }
+
+    // 2. Subsamplear para animação fluida
+    const step = Math.max(1, Math.floor(fullPath.length / CANVAS_POINTS));
+    const path = fullPath.filter((_, i) => i % step === 0 || i === fullPath.length - 1);
+
+    // 3. Calcular escala baseada no range real
+    const maxX = Math.max(...path.map(p => p.x));
+    const maxY = Math.max(...path.map(p => p.y), 1);
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const padX = 60, padY = 40;
+
+    const scaleX = (W - padX * 2) / (maxX || 1);
+    const scaleY = (H - padY * 2) / maxY;
+
+    const toCanvas = (x: number, y: number) => ({
+      cx: padX + x * scaleX,
+      cy: H - padY - y * scaleY,
+    });
+
+    let frame = 0;
 
     const animate = () => {
+      // Background
       ctx.fillStyle = '#0f172a';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, W, H);
 
+      // Grid
       ctx.strokeStyle = '#1e293b';
       ctx.lineWidth = 1;
-      for (let i = 0; i < canvas.width; i += 40) {
-        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+      for (let i = 0; i < W; i += 40) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, H); ctx.stroke();
       }
-      for (let i = 0; i < canvas.height; i += 40) {
-        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+      for (let i = 0; i < H; i += 40) {
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(W, i); ctx.stroke();
       }
 
+      // Eixos
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(0, startY); ctx.lineTo(canvas.width, startY); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(startX, 0); ctx.lineTo(startX, canvas.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, H - padY); ctx.lineTo(W, H - padY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padX, 0); ctx.lineTo(padX, H); ctx.stroke();
 
-      const canvasX = startX + x * scale;
-      const canvasY = startY - y * scale;
-
-      if (y >= 0 && canvasX < canvas.width) {
-        trajectory.push({ x: canvasX, y: canvasY });
-
-        if (trajectory.length > 1) {
-          ctx.strokeStyle = '#3b82f6';
-          ctx.lineWidth = 2;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = '#3b82f6';
-          ctx.beginPath();
-          ctx.moveTo(trajectory[0].x, trajectory[0].y);
-          for (let i = 1; i < trajectory.length; i++) {
-            ctx.lineTo(trajectory[i].x, trajectory[i].y);
-          }
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-        }
-
-        ctx.fillStyle = '#60a5fa';
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#60a5fa';
+      // Trajetória percorrida
+      if (frame > 0) {
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#3b82f6';
         ctx.beginPath();
-        ctx.arc(canvasX, canvasY, 8, 0, Math.PI * 2);
-        ctx.fill();
+        const start = toCanvas(path[0].x, path[0].y);
+        ctx.moveTo(start.cx, start.cy);
+        for (let i = 1; i <= frame && i < path.length; i++) {
+          const p = toCanvas(path[i].x, path[i].y);
+          ctx.lineTo(p.cx, p.cy);
+        }
+        ctx.stroke();
         ctx.shadowBlur = 0;
-//aqui tb. Lembra de revisar dps
-        const dt = 0.016;
-        const speed = Math.sqrt(vx * vx + vy * vy);
-        const ax = -dragCoefficient * speed * vx;
-        const ay = -gravity - dragCoefficient * speed * vy;
-        vx += ax * dt;
-        vy += ay * dt;
-        x += vx * dt;
-        y += vy * dt;
-//revisao
+      }
+
+      // Projétil
+      const cur = toCanvas(path[Math.min(frame, path.length - 1)].x, path[Math.min(frame, path.length - 1)].y);
+      ctx.fillStyle = '#60a5fa';
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = '#60a5fa';
+      ctx.beginPath();
+      ctx.arc(cur.cx, cur.cy, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      frame++;
+      if (frame < path.length) {
         animationRef.current = requestAnimationFrame(animate);
       } else {
         onComplete();

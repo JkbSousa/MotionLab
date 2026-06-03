@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Rocket, ArrowUpCircle, Clock, Target, Gauge } from 'lucide-react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { SimulationCanvas } from './components/SimulationCanvas';
 import { MetricCard } from './components/MetricCard';
 import { TrajectoryChart } from './components/TrajectoryChart';
+import { EscapeVelocityEasterEgg } from './components/EscapeVelocityEasterEgg';
 
 const GRAVITY_OPTIONS = [
   { name: 'Terra', value: 9.81, icon: '🌍', drag: 0.01 },
@@ -18,7 +19,7 @@ type LayoutMode = 'mobile' | 'compact' | 'desktop';
 
 function getLayout(width: number): LayoutMode {
   if (width < 768) return 'mobile';
-  if (width < 1920) return 'compact';
+  if (width < 1100) return 'compact';
   return 'desktop';
 }
 
@@ -29,6 +30,7 @@ export default function App() {
   const [gravity, setGravity] = useState(9.81);
   const [selectedPlanet, setSelectedPlanet] = useState('Terra');
   const [isSimulating, setIsSimulating] = useState(false);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [layout, setLayout] = useState<LayoutMode>(() => getLayout(window.innerWidth));
   const [metrics, setMetrics] = useState({
     maxHeight: 0,
@@ -62,6 +64,12 @@ export default function App() {
   };
 
   const handleSimulate = async () => {
+    // Easter egg: velocidade de escape da Terra
+    if (velocity === 11200 && selectedPlanet === 'Terra') {
+      setMetrics({ maxHeight: Infinity, flightTime: Infinity, range: Infinity, finalVelocity: 11200 });
+      setShowEasterEgg(true);
+      return;
+    }
     await calculateMetrics();
     setIsSimulating(true);
   };
@@ -72,46 +80,61 @@ export default function App() {
 
   // No modo compact, os planetas ficam em grid 2 colunas pra economizar espaço vertical
   const controls = (compact = false) => (
-    <div className="bg-[#1e293b] rounded-xl p-6 border border-[#334155] h-full" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }}>
-      <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-        <div className="w-1 h-6 bg-[#3b82f6] rounded-full" />
-        Controles
-      </h2>
+    <div className="bg-[#1e293b] rounded-xl border border-[#334155] h-full flex flex-col overflow-hidden" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }}>
+      {/* Área scrollável */}
+      <div className="flex-1 overflow-y-auto hide-scrollbar p-6">
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <div className="w-1 h-6 bg-[#3b82f6] rounded-full" />
+          Controles
+        </h2>
 
-      <div className="mb-4">
-        <label className="block text-sm text-gray-400 mb-2 uppercase tracking-wider">Velocidade Inicial</label>
-        <div className="flex items-center gap-3 mb-2">
-          <input type="number" value={velocity} onChange={(e) => setVelocity(Number(e.target.value))}
-            className="flex-1 bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-white focus:border-[#3b82f6] focus:outline-none transition-colors"
-            min="1" max="200" />
-          <span className="text-gray-500 text-sm">m/s</span>
+        <div className="mb-4">
+          <label className="block text-sm text-gray-400 mb-2 uppercase tracking-wider">Velocidade Inicial</label>
+          <div className="flex items-center gap-3 mb-2">
+            <input type="number" value={velocity} onChange={(e) => setVelocity(Number(e.target.value))}
+              className="flex-1 bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-white focus:border-[#3b82f6] focus:outline-none transition-colors"
+              min="1" max="200" />
+            <span className="text-gray-500 text-sm">m/s</span>
+          </div>
+          <input type="range" value={velocity} onChange={(e) => setVelocity(Number(e.target.value))}
+            min="1" max="200" className="w-full h-2 bg-[#334155] rounded-lg appearance-none cursor-pointer slider-thumb" />
         </div>
-        <input type="range" value={velocity} onChange={(e) => setVelocity(Number(e.target.value))}
-          min="1" max="200" className="w-full h-2 bg-[#334155] rounded-lg appearance-none cursor-pointer slider-thumb" />
-      </div>
 
-      <div className="mb-4">
-        <label className="block text-sm text-gray-400 mb-2 uppercase tracking-wider">Ângulo de Lançamento</label>
-        <div className="flex items-center gap-3 mb-2">
-          <input type="number" value={angle} onChange={(e) => setAngle(Number(e.target.value))}
-            className="flex-1 bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-white focus:border-[#3b82f6] focus:outline-none transition-colors"
-            min="0" max="90" />
-          <span className="text-gray-500 text-sm">°</span>
+        <div className="mb-4">
+          <label className="block text-sm text-gray-400 mb-2 uppercase tracking-wider">Ângulo de Lançamento</label>
+          <div className="flex items-center gap-3 mb-2">
+            <input type="number" value={angle} onChange={(e) => setAngle(Number(e.target.value))}
+              className="flex-1 bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-white focus:border-[#3b82f6] focus:outline-none transition-colors"
+              min="0" max="90" />
+            <span className="text-gray-500 text-sm">°</span>
+          </div>
+          <input type="range" value={angle} onChange={(e) => setAngle(Number(e.target.value))}
+            min="0" max="90" className="w-full h-2 bg-[#334155] rounded-lg appearance-none cursor-pointer slider-thumb" />
         </div>
-        <input type="range" value={angle} onChange={(e) => setAngle(Number(e.target.value))}
-          min="0" max="90" className="w-full h-2 bg-[#334155] rounded-lg appearance-none cursor-pointer slider-thumb" />
-      </div>
 
-      <div className="mb-5">
-        <label className="block text-sm text-gray-400 mb-2 uppercase tracking-wider">Ambiente</label>
-        {compact ? (
-          // grade 2 colunas + Sol centralizado na última linha
-          <div className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              {GRAVITY_OPTIONS.slice(0, 4).map((option) => (
+        <div className="mb-2">
+          <label className="block text-sm text-gray-400 mb-2 uppercase tracking-wider">Ambiente</label>
+          {compact ? (
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                {GRAVITY_OPTIONS.slice(0, 4).map((option) => (
+                  <button key={option.name}
+                    onClick={() => { setGravity(option.value); setSelectedPlanet(option.name); setDragCoefficient(option.drag); }}
+                    className={`p-2 rounded-lg border transition-all duration-200 flex items-center gap-2 ${selectedPlanet === option.name
+                      ? 'bg-[#3b82f6]/20 border-[#3b82f6] shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                      : 'bg-[#0f172a] border-[#334155] hover:border-[#3b82f6]/50'}`}>
+                    <span className="text-xl">{option.icon}</span>
+                    <div className="flex-1 text-left min-w-0">
+                      <div className="font-medium text-sm truncate">{option.name}</div>
+                      <div className="text-xs text-gray-500">{option.value} m/s²</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {GRAVITY_OPTIONS.slice(4).map((option) => (
                 <button key={option.name}
                   onClick={() => { setGravity(option.value); setSelectedPlanet(option.name); setDragCoefficient(option.drag); }}
-                  className={`p-2 rounded-lg border transition-all duration-200 flex items-center gap-2 ${selectedPlanet === option.name
+                  className={`w-full p-2 rounded-lg border transition-all duration-200 flex items-center gap-2 ${selectedPlanet === option.name
                     ? 'bg-[#3b82f6]/20 border-[#3b82f6] shadow-[0_0_20px_rgba(59,130,246,0.3)]'
                     : 'bg-[#0f172a] border-[#334155] hover:border-[#3b82f6]/50'}`}>
                   <span className="text-xl">{option.icon}</span>
@@ -122,45 +145,34 @@ export default function App() {
                 </button>
               ))}
             </div>
-            {/* Sol ocupa linha inteira */}
-            {GRAVITY_OPTIONS.slice(4).map((option) => (
-              <button key={option.name}
-                onClick={() => { setGravity(option.value); setSelectedPlanet(option.name); setDragCoefficient(option.drag); }}
-                className={`w-full p-2 rounded-lg border transition-all duration-200 flex items-center gap-2 ${selectedPlanet === option.name
-                  ? 'bg-[#3b82f6]/20 border-[#3b82f6] shadow-[0_0_20px_rgba(59,130,246,0.3)]'
-                  : 'bg-[#0f172a] border-[#334155] hover:border-[#3b82f6]/50'}`}>
-                <span className="text-xl">{option.icon}</span>
-                <div className="flex-1 text-left min-w-0">
-                  <div className="font-medium text-sm truncate">{option.name}</div>
-                  <div className="text-xs text-gray-500">{option.value} m/s²</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-2">
-            {GRAVITY_OPTIONS.map((option) => (
-              <button key={option.name}
-                onClick={() => { setGravity(option.value); setSelectedPlanet(option.name); setDragCoefficient(option.drag); }}
-                className={`p-3 rounded-lg border transition-all duration-200 flex items-center gap-3 ${selectedPlanet === option.name
-                  ? 'bg-[#3b82f6]/20 border-[#3b82f6] shadow-[0_0_20px_rgba(59,130,246,0.3)]'
-                  : 'bg-[#0f172a] border-[#334155] hover:border-[#3b82f6]/50'}`}>
-                <span className="text-2xl">{option.icon}</span>
-                <div className="flex-1 text-left">
-                  <div className="font-medium">{option.name}</div>
-                  <div className="text-xs text-gray-500">{option.value} m/s²</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
+          ) : (
+            <div className="grid grid-cols-1 gap-2">
+              {GRAVITY_OPTIONS.map((option) => (
+                <button key={option.name}
+                  onClick={() => { setGravity(option.value); setSelectedPlanet(option.name); setDragCoefficient(option.drag); }}
+                  className={`p-3 rounded-lg border transition-all duration-200 flex items-center gap-3 ${selectedPlanet === option.name
+                    ? 'bg-[#3b82f6]/20 border-[#3b82f6] shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                    : 'bg-[#0f172a] border-[#334155] hover:border-[#3b82f6]/50'}`}>
+                  <span className="text-2xl">{option.icon}</span>
+                  <div className="flex-1 text-left">
+                    <div className="font-medium">{option.name}</div>
+                    <div className="text-xs text-gray-500">{option.value} m/s²</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      <button onClick={handleSimulate} disabled={isSimulating}
-        className="w-full bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:shadow-[0_0_40px_rgba(59,130,246,0.6)] flex items-center justify-center gap-2">
-        <Rocket className="w-5 h-5" />
-        {isSimulating ? 'SIMULANDO...' : 'SIMULAR'}
-      </button>
+      {/* Botão fixo no fundo */}
+      <div className="p-4 pt-2 shrink-0">
+        <button onClick={handleSimulate} disabled={isSimulating}
+          className="w-full bg-gradient-to-r from-[#3b82f6] to-[#2563eb] hover:from-[#2563eb] hover:to-[#1d4ed8] disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:shadow-[0_0_40px_rgba(59,130,246,0.6)] flex items-center justify-center gap-2">
+          <Rocket className="w-5 h-5" />
+          {isSimulating ? 'SIMULANDO...' : 'SIMULAR'}
+        </button>
+      </div>
     </div>
   );
 
@@ -182,6 +194,11 @@ export default function App() {
   if (layout === 'mobile') {
     return (
       <div className="min-h-screen bg-[#0f172a] text-white p-4 space-y-4">
+        <AnimatePresence>
+          {showEasterEgg && (
+            <EscapeVelocityEasterEgg onComplete={() => { setShowEasterEgg(false); setIsSimulating(false); }} />
+          )}
+        </AnimatePresence>
         {header}
         {controls(false)}
         <div className="bg-[#1e293b] rounded-xl p-4 border border-[#334155]" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }}>
@@ -214,6 +231,11 @@ export default function App() {
   if (layout === 'compact') {
     return (
       <div className="h-screen overflow-hidden bg-[#0f172a] text-white p-4 flex flex-col">
+        <AnimatePresence>
+          {showEasterEgg && (
+            <EscapeVelocityEasterEgg onComplete={() => { setShowEasterEgg(false); setIsSimulating(false); }} />
+          )}
+        </AnimatePresence>
         {header}
         <div className="flex gap-4 flex-1 min-h-0">
 
@@ -336,6 +358,11 @@ export default function App() {
   // --- DESKTOP (>=1100px): layout original com painéis redimensionáveis ---
   return (
     <div className="h-screen overflow-hidden bg-[#0f172a] text-white p-6 flex flex-col">
+      <AnimatePresence>
+        {showEasterEgg && (
+          <EscapeVelocityEasterEgg onComplete={() => { setShowEasterEgg(false); setIsSimulating(false); }} />
+        )}
+      </AnimatePresence>
       {header}
       <div className="flex-1 min-h-0 flex gap-6">
         <motion.aside initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="w-80 shrink-0 overflow-hidden">
