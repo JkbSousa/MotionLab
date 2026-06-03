@@ -28,7 +28,10 @@ export function SimulationCanvas({ velocity, angle, gravity, isSimulating, onCom
     const angleRad = (angle * Math.PI) / 180;
 
     // 1. Pré-calcular trajetória completa com dt dinâmico
-    const dt = Math.max(0.016, velocity / 1000);
+    // dt baseado na velocidade mas limitado pela gravidade — gravidade alta = passos menores
+    const dtByVelocity = velocity / 1000;
+    const dtByGravity = 1 / gravity;
+    const dt = Math.min(Math.max(0.016, dtByVelocity), dtByGravity);
     let vx0 = velocity * Math.cos(angleRad);
     let vy0 = velocity * Math.sin(angleRad);
     let px = 0, py = 0;

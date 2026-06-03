@@ -16,8 +16,10 @@ function simulateTrajectory(velocity: number, angle: number, gravity: number, dr
   let vx = velocity * Math.cos(angleRad);
   let vy = velocity * Math.sin(angleRad);
 
-  // dt dinâmico: velocidades altas usam passos maiores
-  const dt = Math.max(0.016, velocity / 1000);
+  // dt baseado na velocidade mas limitado pela gravidade — gravidade alta = passos menores
+  const dtByVelocity = velocity / 1000;
+  const dtByGravity = 1 / gravity;
+  const dt = Math.min(Math.max(0.016, dtByVelocity), dtByGravity);
 
   let x = 0, y = 0;
   const allPoints: { x: number; y: number }[] = [];
